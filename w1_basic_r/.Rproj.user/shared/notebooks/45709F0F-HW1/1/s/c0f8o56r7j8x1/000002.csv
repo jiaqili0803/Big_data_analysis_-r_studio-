@@ -1,0 +1,7 @@
+"0",""
+"0","median_arrival_delay <- median(nyc$arr_delay, na.rm = TRUE)"
+"0","median_arrival_delay"
+"1","[1]"
+"1"," -5"
+"1","
+"

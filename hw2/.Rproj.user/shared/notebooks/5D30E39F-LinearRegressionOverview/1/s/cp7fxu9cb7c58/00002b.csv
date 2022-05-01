@@ -1,0 +1,10 @@
+"0",""
+"0","# Plotting Regression Line"
+"0","# x= TV, y = Sales"
+"0","# line = regression line "
+"0","ggplot(tr) + "
+"0","  geom_point(aes(x=TV, y=Sales), color=""blue"") + "
+"0","  geom_smooth(aes(x=TV, y=Sales), method = ""lm"")+ "
+"0","  ggtitle(""Scatter plot"")"
+"2","`geom_smooth()` using formula 'y ~ x'
+"

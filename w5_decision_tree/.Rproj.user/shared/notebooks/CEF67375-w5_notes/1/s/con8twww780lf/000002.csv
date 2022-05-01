@@ -1,0 +1,2 @@
+"0","mail_model <- C5.0(Spam ~., data = mail_train)"
+"0",""

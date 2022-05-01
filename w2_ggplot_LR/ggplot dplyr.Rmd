@@ -1,0 +1,254 @@
+---
+title: "RGraphics"
+author: "Sanjeev Kumar"
+date: "Oct 23, 2019"
+output: 
+  html_document: 
+    toc: yes
+    toc_float: yes
+---
+
+> Today we will explore Data Visualization in R using the ggplot2 package. We will also do some Geographical Visualization. Time permitting we will explore the dplyr package for data manipulation.
+
+## ggplot2
+
+Let's begin by loading the package
+```{r}
+library("ggplot2") #Assuming that you have already installed the package
+```
+
+There are two main functions in ggplot2: `qplot()` and `ggplot()`. We will focus exclusively on `ggplot()` as `qplot()` is just a traditional `plot()` like implementation of `ggplot()`.
+
+> **Key Concept of ggplot**: Data Visualization is about mapping properties of data to visual properties in the graphics. `ggplot` allows you full freesom to map *any* data property to *any* visual property.
+
+### Key Elements of `ggplot`
+- **Data**: What you want to visualize. Consists of `variables` stored in columns of a data frame
+- **Geoms**: Geometric Objects drawn to represent the data such as lines, points, bars etc.
+- **Aesthetics**: Visual properties of Geoms such as line color, point shapes, x-y position
+- **Mappings** of data values to Aesthetics
+- **Scales** control the mappings
+- **Guides** show how to map visual properties back to data - for example - Labels
+
+### Test Drawings
+
+We will use the `diamonds` dataset that is built into `ggplot2`. Lets take a quick look into the data:
+```{r}
+dim(diamonds)
+head(diamonds)
+```
+
+Lets start by making a simple scatter plot of `carat` vs `price`
+```{r}
+baseplot <- ggplot(data=diamonds, aes(x=carat, y=price))
+```
+
+The basic `ggplot` function does not draw anything. It just creates the infrastructure based on your data. We can now add the `geom`
+```{r}
+baseplot + geom_point()
+```
+
+Arguments passed to `aes()` are the mappings. Further specifications can be done as arguments to the `geom()` function call.
+```{r}
+baseplotcolor <- ggplot(data=diamonds, aes(x=carat, y=price, colour=color))
+baseplotcolor + geom_point(size=3, alpha=1)
+```
+
+Perhaps you want y axis on log scale
+```{r}
+baseplotcolor + geom_point(size=0.7, alpha=0.3) + scale_y_log10()
+```
+
+We can do the same chart for different values of `cut`
+```{r}
+baseplotcolor + geom_point(size=0.7, alpha=0.3) + facet_wrap(~ cut)
+```
+
+### Different Tyoes of Geoms
+
+`ggplot` can create a lot of different kinds of plots.  
+
+Function | Description
+---------|------------
+`geom_point()` | Points, i.e., scatterplot
+`geom_bar()` | Bar chart
+`geom_line()` | Line chart
+`geom_boxplot()` | Boxplot
+`geom_violin()` | Violin plot
+`geom_density()` | Density plot with one variable
+`geom_density2d()` | Density plot with two variables
+`geom_histogram()` | Histogram
+
+For example: **bar charts**
+```{r}
+ggplot(data=diamonds, aes(x=color)) + geom_bar()
+```
+
+For example: **jitter plots**
+```{r}
+ggplot(data=diamonds, aes(x=color, y = price/carat, colour=color)) + geom_jitter(alpha = 0.25)
+```
+
+### Layering your ggplot
+
+Because of the step-wise nature of `ggplot` it is quite easy to overlay model fits, prediction lines, confidence intervals etc.
+```{r}
+baseplotcolor + geom_smooth()
+```
+
+If you wanted both the scatter plot and the smoothed fitted curve:
+```{r}
+baseplotcolor + geom_smooth() + geom_point()
+```
+
+Lets make the points smaller and more transparent so that fitted curves are more visible
+```{r}
+baseplotcolor + geom_point(size=1.5, alpha=0.25) + geom_smooth() 
+```
+
+### `ggplot` does maps very very well
+
+Start by getting the `maps` library so that we can draw maps. Then create the map data for US states.
+```{r}
+library("maps") #Assuming this is installed, otherwise install first
+USStates <- map_data("state")
+```
+
+We will use the `USArrests` data we have used before
+```{r}
+arrests <- USArrests #Create a copy
+names(arrests) <- tolower(names(arrests)) #Converts column name to lower case
+arrests$region <- tolower(rownames(USArrests)) #Same for row names
+
+# Merge the map data with the arrests data based on region
+arrestsbyregion <- merge(USStates, arrests, sort = FALSE, by = "region")
+arrestsbyregion <- arrestsbyregion[order(arrestsbyregion$order), ]
+
+# Plot a map, filling in the states based on murder rate
+ggplot(data=arrestsbyregion, aes(x=long, y=lat, group=group, fill=murder)) + geom_polygon()
+```
+
+```{r}
+ggplot(data=arrestsbyregion, aes(x=long, y=lat, group=group, fill=murder)) + geom_polygon() +
+  scale_fill_gradient(low = "#FF0000", high = "#0000FF")
+```
+
+You can always save the last plot you generated using `ggsave`
+```{r}
+ggsave(filename = "mychart.jpg")
+```
+
+> **ggplot2** is very adaptable to variety of situations. I leave it to you to explore it further.
+
+## `dplyr` Package
+
+> `dplyr` package has very useful tools for dealing with data frames. It is one of most downloaded and used packages in R ecosystem today.
+
+As usual, we start by loading the package (assuming it has been installed already). We will use the familiar `nycflights13` dataset to test out the package.
+```{r}
+library("dplyr"); library("nycflights13")
+```
+**Key Functions**: for each basic verb of data manipulation:
+
+- filter() (and slice())
+- arrange()
+- select() (and rename())
+- distinct()
+- mutate() (and transmute())
+- summarise()
+- sample_n() and sample_frac()
+
+**Filter for Selecting Rows**
+```{r}
+filter(flights, month == 1, day == 1)  #Criteria Combined using AND
+filter(flights, month == 1 | month == 2) #Using OR
+```
+
+**Slice for Selecting Rows by Position**
+```{r}
+slice(flights, 1:10)
+```
+
+**Arrange Rows Using arrange()**
+```{r}
+arrange(flights, year, month, day) #Sorting in Ascending Order
+arrange(flights, desc(arr_delay)) #Descending Order
+```
+
+**Select Columns With select()**
+```{r}
+select(flights, year, month, day)
+select(flights, year:day) #Inclusive of limits
+select(flights, -(year:day)) #Excluding all columns named
+```
+
+**Renaming Columns using select()**
+```{r}
+rename(flights, tail_num = tailnum)
+```
+
+**Extract Distinct/Unique Rows**
+```{r}
+distinct(select(flights, tailnum))
+distinct(select(flights, origin, dest)) #All unqiue routes
+```
+
+**Adding New Columns With mutate()**
+```{r}
+mutate(flights, gain = arr_delay - dep_delay, speed = distance / air_time * 60)
+mutate(flights,
+  gain = arr_delay - dep_delay,
+  gain_per_hour = gain / (air_time / 60) #You can refer to variables you just created
+)
+transmute(flights,
+  gain = arr_delay - dep_delay,
+  gain_per_hour = gain / (air_time / 60) #Only keep the new variables
+)
+```
+
+**Summarise Values with summarise()**
+```{r}
+summarise(flights, delay = mean(dep_delay, na.rm = TRUE))
+```
+
+**Randomly Sample Rows With sample_n() and sample_frac()**
+```{r}
+sample_n(flights, 10) #Fixed number of samples
+sample_frac(flights, 0.01) #Fixed fraction of samples
+```
+
+### Grouped Operations in `dplyr` Using group_by()
+```{r}
+by_tailnum <- group_by(flights, tailnum)
+delaydata <- summarise(by_tailnum,
+  count = n(),
+  dist = mean(distance, na.rm = TRUE),
+  delay = mean(arr_delay, na.rm = TRUE))
+filtereddelay <- filter(delaydata, count > 20, dist < 2000)
+
+ggplot(filtereddelay, aes(dist, delay)) +
+  geom_point(aes(size = count), alpha = 1/2) + geom_smooth()
+```
+
+`dplyr` provides aggregating functions like: `n()` - number of observations, `n_distinct()` - nunber of distinct observations, `first()`, `last()`, `nth()` - self explanatory.
+
+How many different planes go to each destination:
+```{r}
+destinations <- group_by(flights, dest)
+summarise(destinations,
+  planes = n_distinct(tailnum),
+  flights = n())
+```
+
+### Chaining Functions Together
+`dplyr` provides the `%>%` operator (also known as **pipe** operator) to chain many functions together.
+```{r}
+flights %>%
+  group_by(year, month, day) %>%
+  select(arr_delay, dep_delay) %>%
+  summarise(
+    arr = mean(arr_delay, na.rm = TRUE),
+    dep = mean(dep_delay, na.rm = TRUE)
+  ) %>%
+  filter(arr > 30 | dep > 30)
+```
+

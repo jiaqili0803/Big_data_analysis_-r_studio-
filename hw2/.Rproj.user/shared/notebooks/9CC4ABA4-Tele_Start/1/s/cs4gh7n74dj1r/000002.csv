@@ -1,0 +1,5 @@
+"0","library(neuralnet)"
+"0",""
+"0","model_1 <- neuralnet(yyes ~., data=tele_train, stepmax = 1e8) "
+"0",""
+"0","model_2 <- neuralnet(yyes ~., data=tele_train, hidden=5, stepmax = 1e8) "

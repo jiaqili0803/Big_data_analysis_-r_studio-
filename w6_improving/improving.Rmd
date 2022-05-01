@@ -1,0 +1,40 @@
+---
+title: "Improving_models"
+author: "Ella.Li"
+date: "4/12/2022"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+## CAN FIND FROM CANVAS, HE WILL UPLOAD
+## improving with  caret::train
+
+```{r}
+credit <- read.csv("credit.csv", stringsAsFactors = TRUE)
+
+str(credit)
+```
+# Desision Tree
+
+```{r}
+
+credit <- read.csv("credit.csv", stringsAsFactors = TRUE)
+str(credit)
+summary(credit)
+
+set.seed(12345)
+test_set <- sample(1:nrow(credit), 0.2*nrow(credit)) #random sample
+credit_test <- credit[test_set, ]
+credit_train <- credit[-test_set, ]
+
+dt_model <- C5.0(default ~., data = credit_train)
+dt_predict  <- predict(dt_model, credit_test) # predict only use the x data from test set, to predict y
+
+
+confusionMatrix(dt_predict, credit_test$default, positive = 'yes') 
+```
+

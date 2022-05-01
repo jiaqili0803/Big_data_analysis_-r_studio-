@@ -1,0 +1,308 @@
+---
+title: "Homework Assignment 1"
+author: "ellali"
+output:
+  html_document:
+    toc: yes
+    toc_float: yes
+    toc_depth: 3
+    dev: 'svg'
+    theme: lumen
+    toc_collapsed: true
+    number_sections: false
+  pdf_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE)
+```
+
+
+## HW-1 Instructions
+
+> Our class emphasizes clear communication of data analysis results to non-technical audiences. I expect your HTML output documents to be readable and well formatted. I expect you to put ample comments in your R code to make the code understandable. Along with accuracy of results, I am looking for quality of presentation as well. To complete this assignment, follow these steps:
+
+1. Download the `HW1.Rmd` file from Canvas. 
+
+3. Open `HW1.Rmd` in RStudio. Replace the "Your Name Here" text in the `author:` field with your name.
+
+4. Supply your solutions to the homework by editing `HW1.Rmd`.
+
+5. Run your code in the Console and Knit HTML frequently to check for errors.
+
+6. You may find it easier to solve a problem by interacting only with the Console at first. 
+
+7. When you have completed the homework please check that your knits correctly when you click `Knit HTML`.
+
+8. Submit your RMD file and the HTML output.
+
+
+## Data frame basics
+
+We will work with the nycflights dataset. **Please be sure to keep the data file in the same directory as the RMD file - your project directory.** and make that directory the working directory.
+
+First - make sure that you are reading the data correctly and doing all the data cleaning steps that we did in class. Feel free to go beyond our class work in cleaning the data if you feel the need. 
+
+I now would like you to answer the following - all in their own separate R code blocks.
+
+> Data loading and cleaning
+
+```{r}
+
+# import package
+library(janitor)
+library(dplyr)
+
+# import data
+nyc <- read.csv("nycflights.csv")
+
+# look structure
+str(nyc)
+# look summary of data
+summary(nyc)
+
+# clean data
+# find that "x", "year" column is useless, clean them
+nyc$X <- NULL  # delete this column by assign NULL to it
+nyc$year <- NULL  # delete this column by assign NULL to it
+
+# drop empty columns and rows
+nyc <- remove_empty(nyc, which = c("rows","cols"), quiet = FALSE)
+
+# look structure again (no x and year column now)
+str(nyc)
+```
+No empty rows to remove. No empty columns to remove. And we finished the data cleaning.
+
+
+> Preprocess data, convert Charactor to Factor (can explore the inside data info/category)
+
+```{r}
+
+# find that "carrier", "tailnum", "origin", "dest", "time_hour", are characters, can not see the statistics from summary();
+# convert to factor using as.factor()
+nyc$carrier <- as.factor(nyc$carrier)
+nyc$tailnum <- as.factor(nyc$tailnum)
+nyc$origin <- as.factor(nyc$origin)
+nyc$dest <- as.factor(nyc$dest)
+
+# look summary of data
+summary(nyc)
+```
+
+
+### Data Exploration
+
+> How many airlines are there? (Hint: `levels` and `length` can be useful here)
+
+```{r}
+
+number_of_airlines <- nlevels(nyc$carrier) # nlevels: The Number of Levels of a Factor
+number_of_airlines
+
+```
+Number of airlines in 2013 NYC was : **`r number_of_airlines`**.  
+
+
+> How many flights there were by the airline with code `OO`? (Hint: `nrow` can be useful here along with logical indexing)
+
+```{r}
+# indexing
+nyc_oo <- nyc[nyc$carrier == "OO" , ]
+nrow(nyc_oo)
+
+```
+Number of flights by airline with code `OO` in NYC was: **`r nrow(nyc_oo)`**
+
+
+> How long is the shortest flight out of any NYC airport? (Hint: `min` can be useful, remember to handle `NA` values)
+
+```{r}
+# method 1
+
+# drop NA
+no_NA_air_time <- na.omit(nyc$air_time) 
+#check NA again
+table(is.na(no_NA_air_time)) # only False mean: no NA
+
+# min
+min_air_time <-  min(no_NA_air_time)
+min_air_time
+
+# method 2
+min(nyc$air_time, na.rm = TRUE) # REMOVE NA
+#rm(nycoo) # rm() function in R Language is used to delete objects from the memory
+
+```
+The shortest flight out of any NYC airport is **`r min_air_time`**.
+
+> How many flights where there by United Airlines (code: UA) on Jan 12th 2013?
+
+```{r}
+
+nyc_UA_JAN_12 <- nyc[(nyc$carrier == "UA") & (nyc$month == 1) & (nyc$day == 12) , ] # here no column just means every column
+# here, int should == int type, but  == str will also work because R will auto transfer to same type;
+nrow(nyc_UA_JAN_12)
+```
+Number of flights by United Airlines (code: UA) on Jan 12th 2013 was: **`r nrow(nyc_UA_JAN_12)`**
+
+
+
+### Arrival Delay
+
+> What was the average arrival delay for all airports and all airlines combined in 2013? 
+
+```{r}
+average_arrival_delay <- mean(nyc$arr_delay, na.rm = TRUE)
+average_arrival_delay
+
+```
+The average arrival delay for all airports and all airlines combined in 2013 is: **`r average_arrival_delay``**
+
+> Whats was the median arrival delay for all airports and all airlines combined in 2013?
+
+```{r}
+
+median_arrival_delay <- median(nyc$arr_delay, na.rm = TRUE)
+median_arrival_delay
+
+```
+The median arrival delay for all airports and all airlines combined in 2013 is: **`r median_arrival_delay``**
+
+> Based on your answers to the two questions above, what can you say about the distribution of arrival delays? Provide your answer in a text paragraph form.
+
+The median arrival delay is -5, the average arrival delay is 6.895377, we can say that the negative arrival delays is more (happened more often) than positive arrival delays, so we have -5 median arrival delay, but the length of time of positive arrival delays is usually larger than negative arrival delays, so the average arrival delay is positive: 6.895377.
+
+```{r}
+
+# plot hist
+no_NA_arr_delay <- na.omit(nyc$arr_delay) 
+#check NA again
+table(is.na(no_NA_arr_delay)) # only False mean: no NA
+
+hist(no_NA_arr_delay, breaks=50, col="green", na.rm=TRUE)
+```
+
+
+
+### Airline Performance
+
+Lets see if all airlines are equally terrible as far as flight arrival delays are concerned. For this question you will have to make sure that airline column is coded as a factor.
+
+> Calculate average arrival delays by airline (Hint: look up the command `tapply`)
+
+```{r}
+
+airline_delay <- round(tapply(nyc$arr_delay, nyc$carrier, mean, na.rm=TRUE), 2) 
+# do mean for each carrier's delay time using "tapply" and round to 0.00
+airline_delay
+
+```
+
+
+> Draw a Bar Plot of Average Arrival Delays for all the Airlines (Hint: command for making a Bar Plot is simply `barplot`)
+
+```{r}
+
+barplot(airline_delay, las=2, cex.names = 0.7)  # las means rotation 90, cex.names changes the Size of name text
+
+```
+
+
+> Which airline has the highest average arrival delay? Which airline has the smallest average arrival delay? Are there airlines that actually have negative average delay? Provide answer to this question in a text paragraph form using **inline R code**.
+
+```{r}
+# highest
+highest_ave_ad <- max(airline_delay)
+highest_ave_ad
+highest_airline <- names(airline_delay[airline_delay == highest_ave_ad])
+highest_airline
+# smallest
+smallest_ave_ad <- min(airline_delay[airline_delay > 0])
+smallest_ave_ad
+smallest_airline <- names(airline_delay[airline_delay == smallest_ave_ad])
+smallest_airline
+# neg
+negative_ave_ad <- airline_delay[airline_delay < 0]
+negative_ave_ad
+negative_airline <- names(negative_ave_ad)
+negative_airline
+
+```
+**`r highest_airline`** has the highest average arrival delay: **`r highest_ave_ad`**,  **`r smallest_airline`** has the smallest average arrival delay: **`r smallest_ave_ad`**, **`r negative_airline`** have negative average delay: **`r negative_ave_ad`**.
+
+
+### Air Gain
+
+> Create a new column named airgain such that airgain = (departure delay - arrival delay) : this is the amount of delay a flight made up while in air.
+
+```{r}
+
+# create a new column airgain
+nyc$airgain <- nyc$dep_delay - nyc$arr_delay 
+str(nyc)
+
+```
+
+> a) Explore airgain data - calculate suitable descriptive statistics and appropriate graphics to better understand this data. This part is open ended - you do what you feel works best for you.
+
+```{r}
+
+# descriptive statistics
+# mean,median,25th and 75th quartiles,min,max
+summary(nyc$airgain, na.rm=TRUE) 
+
+# graphics
+hist(nyc$airgain, na.rm=TRUE)
+
+```
+
+
+1. We can see that the Min is -196.00, 1st Qu is -3.00, Median is 7.00, Mean is 5.66, 3rd Qu. is 17.00, Max. is 109.00;
+2. The airgain data are roughly bell-shaped, with a little left skew, and the data are concentrated in the (-20, 30) interval.
+
+                    
+
+> b) Answer the questions:
+
+  > do airlines actually gain any time when in air on average? 
+
+  > Calculate average airgain for different airlines - which airlines do a better job, which do a worse job? 
+
+
+```{r}
+
+airgain_each_carrier <- round(tapply(nyc$airgain, nyc$carrier, mean, na.rm=TRUE), 1) # for each carrier calculate mean of airgain and compare results
+airgain_each_carrier
+
+barplot(airgain_each_carrier, las=2, cex.names = 0.7) # plot
+
+max_airgain_carrier <- names(airgain_each_carrier[airgain_each_carrier == max(airgain_each_carrier)]) # filter the name of max air gain mean carrier.
+max_airgain_carrier
+
+min_airgain_carrier <- names(airgain_each_carrier[airgain_each_carrier == min(airgain_each_carrier)]) # filter the name of max air gain mean carrier.
+min_airgain_carrier
+
+
+```
+
+Yes, most of airlines actually gain time in air on average, except for "F9","FL","MQ".
+
+The average airgain for different airlines are shown in the summary table and plot, **`r max_airgain_carrier`** airline do the best job, **`r min_airgain_carrier`** airline do the worst job.
+
+
+
+### Making Your HTML Look Nice
+
+We want our report to be good looking, professional documents. To that end, I am asking you to do the following:
+
+- Have a floating table of contents
+
+- Include code folding in your output. You can find more about code folding here: https://bookdown.org/yihui/rmarkdown/html-document.html#code-folding
+
+
+That's it. 
+
+**Have Fun!**
+
+Sanjeev

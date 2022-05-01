@@ -1,0 +1,162 @@
+---
+title: "Regression Lab"
+author: "Ella Jiaqi Li"
+date: "03/15/2022"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## 
+```{r}
+# the regression model will auto ignore NA value, don't need omit
+```
+
+
+## Getting Started
+
+Welcome to the Regression Lab Hands-On Exercise. Today we will use the dataset \texttt{income.csv}. Your first task is to download the file from Canvas and import the file into R in a dataframe named \texttt{income}. Once you have the data loaded, you should check whether any data cleaning is necessary.
+
+```{r}
+
+# Write code here for 
+# Load the data (read.csv)
+# Explore the data (head, str, summary)
+# Clean the data (are columns well classified, do you need to factorize something, are there NAs, are there negative values?)
+# Note that gender 1 = male, gender 2 = female
+# race 1 = african american, 2 = hispanic, 3 = mixed, 4 = other
+
+inc <- read.csv("income.csv")
+head(inc)
+str(inc)
+summary(inc)
+
+
+inc$X <- NULL
+inc$gender <- as.factor(inc$gender)
+inc$race <- as.factor(inc$race)
+
+# deal with neg 
+inc$income <- ifelse(inc$income < 0, NA, inc$income)
+inc$weight <- ifelse(inc$weight < 0, NA, inc$weight)
+
+# NA
+# inc <- na.omit(inc) 
+
+str(inc)
+summary(inc)
+
+```
+
+Did you find something interesting? Did you need to do any data cleaning? Explain in the text block below.
+
+```{}
+# Note that gender 1 = male, gender 2 = female
+# race 1 = african american, 2 = hispanic, 3 = mixed, 4 = other
+I find the 3 = mixed race is the less: only 83 of them;
+
+I have done the data cleaning above, deal with the factors, and negtive values;
+I didnot delete the NA values cause the regression model will ignore the NA values automaticlly.
+
+```
+
+## Initial Data Exploration
+
+### Graphical Exploration
+
+First lets graphically examine the data. We are interested in finding out what are the predictor variables that affect the response variable - income. What is the relationship between the predictor variables and the response variable. Build graphs that will help you understand these relationships better.
+
+```{r}
+# Write code here for 
+# Building relevant charts
+```
+
+What do the charts tell you? Write your interpretation below.
+
+```{}
+Enter your answer here
+
+```
+
+### Data Exploration
+
+To get a better understanding of the data, we should calculate summary statistics, mean income values for different gender and races and so on.
+
+```{r}
+# Write code here for 
+# doing relevant data exploration (use tapply liberally)
+```
+
+Do you get any insights from the data exploration above, Write your interpretation below.
+
+```{}
+Enter your answer here
+
+```
+
+## Building Regression Models
+
+### Model A: Model the Main Effects
+```{r}
+# Run a Linear Regression with income as response variable 
+# and gender, race and weight as predictor variables (Model A)
+
+ma <- lm(income ~ . , data=inc)
+summary(ma)
+
+```
+
+How do you interpret the results? Explain in the block below - how do gender, race and weight impact somebody's income level.
+```{}
+compare to gender1 male, genter2 female make 8310.085 less money than male;
+compare to race1, race2, race3, race4 make 3141.130 more, 10554.350 more, and 9639.666 more money;
+weight is not significant here, so no impact on one's income level;
+
+we can see race impact income, gender impact income, alough r-squared is low, may because the there should exist other factors like education, states....., but here is exist relation here between income and gender, race;
+
+
+```
+
+### Model B: Including Interactions
+
+Does impact of weight on income differs for different genders?
+
+```{r}
+# Run a Linear Regression including an interaction between weight and gender
+
+mb <- lm(income ~ . + gender*weight, data=inc)
+summary(mb)
+
+
+
+```
+
+How would you interpret the output of the above model? How many coefficients are estimated for this interaction term? What do you think these coefficients mean? How would you interpret them? Enter your answer in the text block below.
+
+```{}
+gender2 will have positive impact on income, more 6838.41 money than gender1;
+all people will have 32.77 more on money per pound weight;
+but for woman, they will have -90.05 less on income per pound weight, so (32-90= -58), -58 less on income.
+
+```
+
+### Model C: Including all interactions
+
+Lets build a model that includes interaction between race and gender and also weight and gender. Do we are testing whether the impact of race on income is different for different gender; and also whether the impact of weight on income is different for different gender.
+
+```{r}
+# Run a Linear Regression including an interaction between race and gender and also weight and gender
+mc <- lm(income ~ . + gender*race, data=inc)
+summary(mc)
+
+```
+
+Overall what do you think of this model? Is it useful? Are we getting good results? How would you interpret these results? Enter your reponse in the text block below.
+```{}
+gender2 will have -4488.391 less than the gender1;
+for all people, 1 ponud weight will have -11.744 less on income;
+also, if the person is gender2, and race2 will impact the income to -4630.899, same for race3 and 4.
+
+```

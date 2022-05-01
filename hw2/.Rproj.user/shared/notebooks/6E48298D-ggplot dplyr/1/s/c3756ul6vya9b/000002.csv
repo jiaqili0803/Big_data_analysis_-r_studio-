@@ -1,0 +1,3 @@
+"0","baseplotcolor + geom_smooth() + geom_point()"
+"2","`geom_smooth()` using method = 'gam' and formula 'y ~ s(x, bs = ""cs"")'
+"

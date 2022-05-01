@@ -1,0 +1,1 @@
+"0","model_2 <- neuralnet(left~., data=hr_train, hidden=5, stepmax = 1e8)"

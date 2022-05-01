@@ -1,0 +1,288 @@
+---
+title: "Linear Regression Overview"
+author: "Sanjeev Kumar"
+date: "September 14, 2021"
+output: 
+  html_document: 
+    highlight: tango
+    theme: united
+    toc: true
+    toc_depth: 2
+    toc_float: true
+    number_sections: true
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(warning = FALSE, message = FALSE) 
+```
+
+> You would want to keep a local copy of the `RMD` file and edit the file for the class exercise today. Submit an edited copy of the file as your class exercise submission.
+
+<hr>
+
+<p style="background-color:Orange;">Important Note: We will be doing class exercise today in a team of two students each. Figure out who you are working with. Move around if you need to.</p>
+<hr>
+
+
+# Work Flow
+
+- Step 0: Preparation
+- Step 1: Running Linear Regression and Evaluating the Results
+- Step 2: Making Predictions
+- Step 3: Evaluating the Model Performance
+- Step 4: Iterate to Find Best Model
+
+
+# Step 0: Preparation
+
+Ensure that the data file is in the same directory as this .RMD file. Make that directory the working directory. `Session > Set Working Directory > To Source File Location`
+
+## Read and Explore Data
+
+```{r}
+# Reading the data file 
+Advertising <- read.csv("Advertising2.csv")
+str(Advertising)
+
+# Explore the data
+if(!"GGally" %in% installed.packages()){install.packages("GGally")}
+library(GGally)
+ggpairs(Advertising)
+```
+
+## Data Cleaning
+
+```{r}
+# Start without Instagram (Factor) variable. 
+# All x's are numeric variables 
+Advertising
+Ad_small <- Advertising[,-4] #Without instagram
+Ad_small
+```
+
+##  Split Data into Training set and Validation set 
+
+```{r}
+#70-30 split 
+set.seed(567) #All your partioins for this class use this seed. 
+nrow(Ad_small)
+train_set <- sample(1:nrow(Ad_small), 0.7*nrow(Ad_small))
+
+#Training set 
+tr <- Ad_small[train_set, ]
+x_tr <- Ad_small[train_set,-4] #x only 
+y_tr <- Ad_small[train_set,4] # y onle
+
+#Validation set 
+val <- Ad_small[-train_set, ]
+x_val <- Ad_small[-train_set,-4]  #x only 
+y_val <- Ad_small[-train_set,4]   #y only
+
+```
+
+# Step 1: Running Linear Regression
+
+```{r}
+# Simple linear regression: Sales = b0 + b1*TV 
+
+m1 <- lm(Sales ~ TV, data =tr) #lm: linear model 
+
+# Regression output 
+summary(m1)
+
+# Other regression outputs 
+ls(m1) 
+m1$coefficients
+m1$fitted.values #est. y-values for the training set. 
+
+
+# Residual plots 
+plot(m1)
+
+# Four plots in one single page 
+par(mfrow=c(2,2))
+plot(m1)
+
+par(mfrow=c(1,1)) #resetting plot space back
+
+# Plotting Regression Line
+# x= TV, y = Sales
+# line = regression line 
+ggplot(tr) + 
+  geom_point(aes(x=TV, y=Sales), color="blue") + 
+  geom_smooth(aes(x=TV, y=Sales), method = "lm")+ 
+  ggtitle("Scatter plot")
+
+
+# x1= fitted.value (yhat) y= Sales (actual)
+ggplot(data=tr) + 
+  geom_point(aes(x= m1$fitted.values, y=Sales), color="blue") + 
+  labs(title="Predicted vs. Actual", x ="Predicted y", y = "Actual y") 
+```
+
+# Step 2. Making predictions 
+
+```{r}
+# Apply m1 to validation data to generate prediction
+# Point forecasts only 
+predict(m1, x_val) #R automatically reads TV variable only. 
+
+
+# Predicting the average value for given x 
+# Confidence intervals: Estimates Average y values 
+head(predict(m1, x_val, interval = "confidence", level = 0.95))
+
+
+# Store point prediction to a vector 
+pred1 <- predict(m1, x_val) 
+
+```
+
+#  Step 3. Evaluating the model performance   
+
+```{r}
+# Computing algorithm performance 
+if(!"caret" %in% installed.packages()){install.packages("caret")}
+library(caret)
+
+# postResample (caret package): RMSE, R^2, MAE 
+postResample(pred1, y_val)
+m1_result <- postResample(pred1, y_val)
+
+
+# Put them in the data frame for later comparisons 
+result<- data.frame(m1 = round(m1_result,3))
+result
+
+
+#Want to compute MAPE (Mean Absolute Percentage Error) 
+if(!"Metrics" %in% installed.packages()){install.packages("Metrics")}
+library(Metrics)
+mape(y_val, pred1) #mape(actual y, prediction)
+
+```
+
+# Step 4: Iterate to Find Best Model
+
+## Full regression model 
+
+> Do the class exercise below - fill the code for the three Steps. Out goal is to get the `result` object for the full model.
+
+```{r}
+#Exercise
+# Run the full Regression Model  (m2) 
+#  m2 <- lm(Sales ~ TV+ Radio + Newspaper, data = tr) 
+# Examine Regression Outputs 
+# Make predictions using validating data 
+
+#  Step 1. Running linear regression and evaluating the results 
+
+#  Step 2. Making predictions 
+
+#  Step 3. Evaluating the model performance   
+#          Put postResample result in the object, result     
+
+```
+
+## Smaller Regression Model
+
+```{r}
+
+# Model 3 (m3)  Sales ~ Tv+ Radio 
+
+#  Step 1. Running linear regression and evaluating the results 
+
+m3 <- lm(Sales ~ TV + Radio, data = tr)
+summary(m3)
+
+
+#  Step 2. Making predictions 
+
+pred3 <- predict(m3, x_val)
+
+
+#  Step 3. Evaluating the model performance   
+#          Put postResample result in the object, result     
+
+m3_result <- postResample(pred3, y_val)
+result<- data.frame(result, m3 = round(m3_result,3))
+result 
+```
+
+## Including dummy variable(s) 
+
+
+```{r}
+#Including dummy variables
+#Creating Train and Validation Set for data with dummy variable
+
+#70-30 split 
+Ad_full <- read.csv("Advertising2.csv")
+str(Ad_full)
+
+#Train set 
+tr <- Ad_full[train_set, ]
+x_tr <- Ad_full[train_set,-5]
+y_tr <- Ad_full[train_set,5]
+
+#Validation set
+val <- Ad_full[-train_set, ]
+x_val <- Ad_full[-train_set,-5]  
+y_val <- Ad_full[-train_set,5]  
+
+head(tr)
+
+#  Step 1. Running linear regression and evaluating the results 
+
+md1 <- lm(Sales~., tr)
+summary(md1)
+
+#  Step 2. Making predictions 
+
+pred4 <- predict(md1, x_val)
+
+#Creating predict interval 
+predict(md1, x_val, interval ="prediction", level= 0.95)
+
+
+#  Step 3. Evaluating the model performance   
+#          Put postResample result in the object, result     
+
+# Evaluating model performance
+postResample(pred4, y_val)
+md1_result <- postResample(pred4, y_val)
+
+result<- data.frame(result, md1 = round(md1_result,3))
+result
+```
+
+
+## Interaction variables
+
+```{r}
+# Instagram*TV: Captures the interaction between Instagram and TV. 
+
+# InstagramYes =1,    InstagramYes*TV = 1*TV = TV
+# InstagramNo (InstagramYes=0)    InstagramYes*TV = 0*TV = 0
+
+md2 <- lm(Sales~ TV + Newspaper + Radio + Instagram + Instagram*TV, tr)
+summary(md2)
+```
+
+> Class Exercise - add model performace metrics for the `md2` model to the `result` object.
+
+## Polynomial regression
+
+```{r}
+# I(polynomial math expression)
+md3 <- lm(Sales ~ TV + I(TV ^ 2)  +Instagram, data = tr)
+summary(md3)
+
+```
+
+> Class Exercise - add model performace metrics for the `md3` model to the `result` object.
+
+# Conclusion: Best Model
+
+> Class Exercise - which is the best Linear Regression model among all that we studied today?

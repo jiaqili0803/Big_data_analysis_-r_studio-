@@ -1,0 +1,96 @@
+---
+title: "logistic_lab_submission"
+author: "Ella.Li jiaqi li"
+date: "3/17/2022"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## read and clean data
+
+```{r}
+
+hr_data <- read.csv("hrdata.csv")
+str(hr_data)
+summary(hr_data)
+```
+
+```{r}
+hr_data$X <- NULL
+hr_data$sales <- as.factor(hr_data$sales)
+hr_data$salary <- as.factor(hr_data$salary)
+
+str(hr_data)
+summary(hr_data)
+
+# # need to break category data to dummy variables to all numerical data 
+# hr_data_mm <- as.data.frame(model.matrix( ~ . -1, data=hr_data)) 
+#     # .: all 
+#     # -1 : no interception
+#     # as.data.frame: matrix to dataframe
+# 
+# # normalize
+# normalize <- function(x){(x - min(x))/(max(x)-min(x))}
+# 
+# hr_normal <- as.data.frame(lapply(hr_data_mm, normalize))   
+# 
+# rm(hr_data)
+# rm(hr_data_mm)
+# 
+# str(hr_normal)
+# summary(hr_normal)
+
+
+```
+
+# TEST/ TRAIN DATA SET
+
+```{r}
+set.seed(12345)
+
+test_set <- sample(1:nrow(hr_data), 0.2*nrow(hr_data)) #random sample
+
+hr_test <- hr_data[test_set, ]
+hr_train <- hr_data[-test_set, ]
+
+```
+
+
+
+# CREAT MODEL on train data
+
+```{r}
+log_model_1 <- glm(left ~ ., data=hr_train, family = "binomial") # train model only use train data
+summary(log_model_1)
+```
+
+
+# PREDICT TEST data
+
+```{r}
+predicted_left <- predict(log_model_1, hr_test, type="response") # use test data
+binary_predicted_left <- ifelse(predicted_left >= 0.5, 1, 0)
+
+
+
+```
+
+
+# EVALUATE MODEL by confusion matrix
+
+```{r}
+library(gmodels)
+CrossTable(binary_predicted_left, hr_test$left) 
+```
+
+
+# interpretation
+
+```{}
+Here, the true positive(stay) num is 2113, the true negtive(left) num is 259, the false predicted left but actually stayed num is 146, the false predicted stay but actually left num is 481;
+
+```
+

@@ -1,0 +1,140 @@
+---
+title: "TO_628_NOTE_1"
+author: "Ella.Li"
+date: "3/8/2022"
+output:
+  html_document: 
+    toc: true
+    toc_depth: 2
+  pdf_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+# Just starting
+
+We are starting right now. **wish us luck!**
+
+```{r}
+# Just writing some code
+print('Hello World!')
+
+```
+## Import data
+
+we will start import data
+
+```{r, cache=TRUE}
+# import data
+nyc <- read.csv("nycflights.csv")
+
+# look structure
+str(nyc)
+# look summary of data
+summary(nyc)
+
+
+
+```
+
+## clean data
+
+Lets clean data now. *clean data is important*
+
+```{r}
+# delete the column called "x"
+nyc$X <- NULL  # delete this column by assign NULL to it
+nyc$year <- NULL
+
+str(nyc)
+```
+
+### sepcial operaters
+
+* NA means missing value;
+* NULL means nothing (NULL represents the null object in R. NULL is used mainly to represent the lists with zero length, and is often * returned by expressions and functions whose value is undefined. as. null ignores its argument and returns the value NULL .);
+* Inf means infinite;
+* NaN means not a numer;
+
+### convert CHR to a Factor (to go into the each uniq data)
+```{r}
+nyc$dest <- as.factor(nyc$dest)
+nyc$origin <- as.factor(nyc$origin)
+nyc$tailnum <- as.factor(nyc$tailnum)
+nyc$carrier <- as.factor(nyc$carrier)
+
+# look summary of data
+summary(nyc)
+```
+
+
+# HW 1-PRACTICE
+## DATA EXPLORATION
+
+> How many airlines?
+
+```{r}
+number_of_airlines <- nlevels(nyc$carrier) # nlevels
+number_of_airlines  # will only get result after factorize, always check the summary() to see structure
+
+```
+Number of airlines leaving NYC in 2013 was : **`r number_of_airlines`**.  #inline result
+
+> Number of flights by the airline with code "OO"?
+
+```{r}
+nyc_oo <- nyc[nyc$carrier == "OO" , ]
+
+```
+Number of flights by aireline OO in 2012 was: `r nrow(nyc_oo)`
+
+> How many flights where there by United Airlines (code: UA) on Jan 12th 2013?
+
+```{r}
+nyc_UA_JAN_12 <- nyc[(nyc$carrier == "UA") & (nyc$month == 1) & (nyc$day == 12) , ] # here no column just means every column
+# here, int should == int type, but  == str will also work because R will auto transfer to same type
+nrow(nyc_UA_JAN_12)
+```
+Number of flights by United Airlines (code: UA) on Jan 12th 2013 was: `r nrow(nyc_UA_JAN_12)`
+
+> Shoetest flight time?
+
+```{r}
+
+min(nyc$air_time, na.rm = TRUE) # REMOVE NA
+#rm(nycoo) # rm() function in R Language is used to delete objects from the memory
+
+
+```
+
+## Airline performance
+Calculate average arrival delays by airline (Hint: look up the command tapply)
+
+Draw a Bar Plot of Average Arrival Delays for all the Airlines (Hint: command for making a Bar Plot is simply barplot)
+
+Which airline has the highest average arrival delay? Which airline has the smallest average arrival delay? Are there airlines that actually have negative average delay? Provide answer to this question in a text paragraph form using inline R code.
+
+```{r}
+airline_delay <- round(tapply(nyc$arr_delay, nyc$carrier, mean, na.rm=TRUE), 2) # do mean for each carrier's delay time using "tapply" and round to 0.00
+airline_delay
+barplot(airline_delay, las=2, cex.names = 0.7)  # las means rotation 90, cex.names changes the Size of name text
+```
+
+> Air Gain
+
+calculate airgain values and keep it in a new column
+
+```{r}
+nyc$airgain <- nyc$dep_delay - nyc$arr_delay # creat a new column airgain
+summary(nyc$airgain, na.rm=TRUE) # stast summary
+
+airgain_each_carrier <- round(tapply(nyc$airgain, nyc$carrier, mean, na.rm=TRUE), 1) # for each carrier calculate mean of airgain and compare results
+airgain_each_carrier
+
+barplot(airgain_each_carrier, las=2, cex.names = 0.7) # plot
+
+names(airgain_each_carrier[airgain_each_carrier == max(airgain_each_carrier)]) # filter the name of max mean.
+
+```
+

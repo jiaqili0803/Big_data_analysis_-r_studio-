@@ -1,0 +1,3 @@
+"0","performance <- tapply(credit$STATUS_NEW, credit$ID, mean, na.rm = TRUE)"
+"0","all <- as.data.frame(performance, row.names = NULL)"
+"0","all$ID <- rownames(all)"

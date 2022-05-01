@@ -1,0 +1,2 @@
+"0","ggplot(data=arrestsbyregion, aes(x=long, y=lat, group=group, fill=murder)) + geom_polygon() +"
+"0","  scale_fill_gradient(low = ""#FF0000"", high = ""#0000FF"")"

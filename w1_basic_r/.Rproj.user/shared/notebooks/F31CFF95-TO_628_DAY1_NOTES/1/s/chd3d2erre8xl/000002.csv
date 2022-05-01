@@ -1,0 +1,2 @@
+"0","# import data"
+"0","nyc <- read.csv(""nycflights.csv"")"

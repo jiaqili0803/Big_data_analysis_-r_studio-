@@ -1,0 +1,1 @@
+"0","select(flights, -(year:day)) #Excluding all columns named"

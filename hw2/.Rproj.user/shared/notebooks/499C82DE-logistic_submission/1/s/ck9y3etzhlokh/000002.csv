@@ -1,0 +1,5 @@
+"0","predicted_left <- predict(log_model_1, hr_test, type=""response"") # use test data"
+"0","binary_predicted_left <- ifelse(predicted_left >= 0.5, 1, 0)"
+"0",""
+"0",""
+"0",""

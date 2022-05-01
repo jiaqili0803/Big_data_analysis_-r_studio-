@@ -1,0 +1,6 @@
+"0","number_of_airlines <- nlevels(nyc$carrier) # nlevels"
+"0","number_of_airlines  # will only get result after factorize, always check the summary() to see structure"
+"1","[1]"
+"1"," 16"
+"1","
+"

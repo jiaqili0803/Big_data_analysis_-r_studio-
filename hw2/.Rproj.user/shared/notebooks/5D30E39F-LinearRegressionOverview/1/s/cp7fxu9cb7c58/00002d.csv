@@ -1,0 +1,4 @@
+"0","# x1= fitted.value (yhat) y= Sales (actual)"
+"0","ggplot(data=tr) + "
+"0","  geom_point(aes(x= m1$fitted.values, y=Sales), color=""blue"") + "
+"0","  labs(title=""Predicted vs. Actual"", x =""Predicted y"", y = ""Actual y"") "

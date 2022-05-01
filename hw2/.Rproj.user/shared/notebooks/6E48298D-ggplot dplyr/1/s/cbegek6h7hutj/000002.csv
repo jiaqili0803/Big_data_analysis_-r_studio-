@@ -1,0 +1,4 @@
+"0","destinations <- group_by(flights, dest)"
+"0","summarise(destinations,"
+"0","  planes = n_distinct(tailnum),"
+"0","  flights = n())"

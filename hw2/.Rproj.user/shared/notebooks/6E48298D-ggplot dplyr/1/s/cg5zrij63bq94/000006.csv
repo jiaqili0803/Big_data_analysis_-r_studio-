@@ -1,0 +1,4 @@
+"0","transmute(flights,"
+"0","  gain = arr_delay - dep_delay,"
+"0","  gain_per_hour = gain / (air_time / 60) #Only keep the new variables"
+"0",")"

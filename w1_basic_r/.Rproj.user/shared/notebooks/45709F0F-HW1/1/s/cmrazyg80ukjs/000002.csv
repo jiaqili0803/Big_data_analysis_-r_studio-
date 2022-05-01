@@ -1,0 +1,3 @@
+"0",""
+"0","barplot(airline_delay, las=2, cex.names = 0.7)  # las means rotation 90, cex.names changes the Size of name text"
+"0",""

@@ -1,0 +1,120 @@
+---
+title: "annnetwork"
+author: "Ella.Li"
+date: "3/22/2022"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+# READ DATA
+
+```{r}
+hr_data <- read.csv("hrdata.csv")
+str(hr_data)
+summary(hr_data)
+```
+
+# CLEAN DATA
+
+```{r}
+hr_data$X <- NULL
+hr_data$sales <- NULL
+hr_data$salary <- NULL
+
+
+# hr_data$sales <- as.factor(hr_data$sales)
+# hr_data$salary <- as.factor(hr_data$salary)
+
+
+
+str(hr_data)
+summary(hr_data)
+
+# need to break category data to dummy variables to all numerical data 
+hr_data_mm <- as.data.frame(model.matrix( ~ . -1, data=hr_data)) 
+    # .: all 
+    # -1 : no interception
+    # as.data.frame: matrix to dataframe
+
+# normalize
+normalize <- function(x){(x - min(x))/(max(x)-min(x))}
+
+hr_normal <- as.data.frame(lapply(hr_data_mm, normalize))   
+
+rm(hr_data)
+rm(hr_data_mm)
+
+str(hr_normal)
+summary(hr_normal)
+
+
+
+```
+
+# TEST/ TRAIN DATA SET
+```{r}
+set.seed(12345)
+
+test_set <- sample(1:nrow(hr_normal), 0.2*nrow(hr_normal)) #random sample
+
+hr_test <- hr_normal[test_set, ]
+hr_train <- hr_normal[-test_set, ]
+rm(hr_normal)
+
+```
+
+# CREAT MODEL on train data
+
+```{r}
+library(neuralnet)
+
+
+```
+```{r}
+model_1 <- neuralnet(left ~., data=hr_train)  #we need to predict Y(left)
+
+
+```
+
+
+```{r}
+plot(model_1)
+# blue are intercepts
+```
+```{r}
+model_2 <- neuralnet(left~., data=hr_train, hidden=5, stepmax = 1e8)
+```
+
+```{r}
+plot(model_2)
+```
+
+
+
+# PREDICT TEST data
+
+```{r}
+# modelresult <- compute(model_1, hr_test)
+# modelprediction <- modelresult$net.result
+# summary(modelprediction)
+
+p1 <- predict(model_1, hr_test) # predict only use the x data from test set, to predict y
+summary(p1)
+
+p1_binary <- ifelse(p1 >= 0.5, 1, 0)
+
+
+```
+
+# EVALUATE MODEL
+```{r}
+library(gmodels)
+
+CrossTable(p1_binary, hr_test$left, prop.chisq = F,prop.r = F, prop.c = F, prop.t = F)
+# compare y and true y
+
+```
+
+# INTERPRETE

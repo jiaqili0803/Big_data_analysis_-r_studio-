@@ -1,0 +1,6 @@
+"0",""
+"0","set.seed(12345)"
+"0","test_set <- sample(1:nrow(adv), 0.4*nrow(adv)) # take random sample, choose 40% data from all 1:200 rows"
+"0","adv_test <- adv[test_set, ]"
+"0","adv_train <- adv[-test_set, ] # data not in the test set"
+"0",""

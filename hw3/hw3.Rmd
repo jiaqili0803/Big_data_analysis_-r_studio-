@@ -1,0 +1,161 @@
+---
+title: "HW3 stack model"
+author: "Ella Li (jiaqi li)"
+date: "04/12/2022"
+output:
+  html_document:
+    toc: true
+    theme: readable
+    highlight: tango
+    code_folding: show
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Tips：
+Randomize for each models;
+Normalization is only necessary for KNN AND ANN！but do for regression and desision tree will not cause error!
+
+# 1. Import and clean the data as needed
+```{r}
+TelcoChurn <- read.csv("TelcoChurn.csv", stringsAsFactors =  TRUE)
+TelcoChurn$customerID <- NULL
+str(TelcoChurn)
+summary(TelcoChurn)
+```
+
+
+# 2. Convert factors into dummy variables using model.matrix command.
+```{r}
+TelcoChurn_MM <- as.data.frame(model.matrix(~. -1, TelcoChurn))
+str(TelcoChurn)
+
+```
+
+# 3. Randomize the dataset (i.e shuffle the rows) (optional)
+```{r}
+#Normalize the data
+normalize <- function(x) {
+  return ((x - min(x)) / (max(x) - min(x)))
+}
+TelcoChurn_norm <- as.data.frame(lapply(TelcoChurn_MM, normalize))
+
+set.seed(12345)
+TelcoChurn_random <- TelcoChurn_norm[sample(nrow(TelcoChurn_norm)),]
+
+```
+
+
+# 4. Build following models - on the whole data - no need to sepearate into train and test. Just build a simple and basic model. No need to try to get the models better - just a model will suffice for the class exercise.
+# 5. Predict the entire data for all the above models. This will creare four vectors of predictions. Build a confusion matrix for each of the predictions to get a sense of the accuracy of each of the models. Calculate Kappa for each of the models.
+
+## 4~5.1 Logistic Regression
+```{r}
+log_model <- glm(ChurnYes ~., data=TelcoChurn_random, family = "binomial")
+
+TelcoChurn_log_pred <- predict(log_model, TelcoChurn_random, type="response")
+
+TelcoChurn_log_pred_binary <- ifelse(TelcoChurn_log_pred >= 0.5, 1, 0)
+
+library(caret)
+confusionMatrix(as.factor(TelcoChurn_log_pred_binary), as.factor(TelcoChurn_random$ChurnYes))
+```
+
+
+## 4~5.2 KNN 
+```{r}
+TelcoChurn_label_KNN <- TelcoChurn_random[, 32]
+
+library(class)
+TelcoChurn_pred_KNN <- knn(train = TelcoChurn_random[, -32], test=TelcoChurn_random[, -32], cl=TelcoChurn_label_KNN, k=83)
+
+library(caret)
+confusionMatrix(as.factor(TelcoChurn_pred_KNN), as.factor(TelcoChurn_label_KNN), positive = "1")
+```
+
+
+## 4~5.3 ANN
+```{r}
+library(neuralnet)
+ANN_model <- neuralnet(ChurnYes ~., data=TelcoChurn_random)
+
+TelcoChurn_pred_ANN <- predict(ANN_model, TelcoChurn_random, type="response")
+
+TelcoChurn_pred_ANN_binary <- ifelse(TelcoChurn_pred_ANN >= 0.5, 1, 0)
+
+confusionMatrix(as.factor(TelcoChurn_pred_ANN_binary), as.factor(TelcoChurn_random$ChurnYes))
+
+# we need non-binary values for stack model for ANN and logi
+```
+
+
+## 4~5.4 Decision Tree
+```{r}
+library(C50)
+DT_model <- C5.0(as.factor(ChurnYes) ~., data= TelcoChurn_random)
+
+TelcoChurn_pred_DT <- predict(DT_model, TelcoChurn_random)
+
+confusionMatrix(as.factor(TelcoChurn_pred_DT), as.factor(TelcoChurn_random$ChurnYes))
+
+```
+
+
+
+# 6. Combine the four prediction vectors and the response variable into a Data Frame. You will now have a data frame of five columns.
+```{r}
+stack_model <- data.frame(TelcoChurn_log_pred, TelcoChurn_pred_KNN, TelcoChurn_pred_ANN, TelcoChurn_pred_DT, TelcoChurn_random$ChurnYes)
+
+colnames(stack_model) <- c("logi_reg", "KNN", "ANN", "DT", "True_ChurnYes")
+
+summary(stack_model)
+str(stack_model)
+```
+
+
+# 7. Break this data frame into a test and a train set. 
+```{r}
+set.seed(12345)
+test_set <- sample(1:nrow(stack_model), 0.2*nrow(stack_model)) 
+
+stack_model_train <- stack_model[-test_set, ]
+stack_model_test <- stack_model[test_set, ]
+
+str(stack_model_train)
+```
+
+
+# 8. Build a decision tree model on the train set. Use all the prediction vector columns as the x values and the response variable as the y value.
+```{r}
+stack_model_DT <- C5.0(as.factor(True_ChurnYes)~., stack_model_train)
+
+```
+
+
+# 9. Predict the test data. Build a confusion matrix for this prediction. Calculate Kappa.
+```{r}
+stack_model_pred_test <- predict(stack_model_DT, stack_model_test)
+
+confusionMatrix(stack_model_pred_test, as.factor(stack_model_test$True_ChurnYes))
+
+```
+
+
+# 10. Compare the Confusion Matrix and Kappa for the second level Decision Tree models with the Confusion Matrix and Kappa for each of the individual models.
+
+Logi: Accuracy : 0.807 , Kappa : 0.478 ;
+KNN: Accuracy : 0.7958, Kappa : 0.4632;
+ANN: Accuracy : 0.8079, Kappa : 0.4675;
+Decision Tree: Accuracy : 0.8083, Kappa : 0.4833;
+
+
+The second level Decision Tree model: Accuracy : 0.8108, Kappa : 0.4766;
+
+The second level Decision Tree model has better performance than individual models.
+
+# 11. Write a summary of whether we managed to improve our models by building a two level model of models (aka Stacked Model)
+
+Yes, we have to manage to improve our models by building a two level model of models (aka Stacked Model) because this will give us better model performance and get better prediction results.
+

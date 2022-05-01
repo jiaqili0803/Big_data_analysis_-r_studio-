@@ -1,0 +1,5 @@
+"0","set.seed(12345)"
+"0","test_set <- sample(1:nrow(grad), 0.25*nrow(grad))"
+"0",""
+"0","grad_test <- grad[test_set, ]"
+"0","grad_train <- grad[-test_set, ]"

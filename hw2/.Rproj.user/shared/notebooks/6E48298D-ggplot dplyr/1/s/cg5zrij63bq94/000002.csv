@@ -1,0 +1,1 @@
+"0","mutate(flights, gain = arr_delay - dep_delay, speed = distance / air_time * 60)"

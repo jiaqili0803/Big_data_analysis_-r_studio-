@@ -1,0 +1,2 @@
+"0","application <- read.csv(""application_record.csv"")"
+"0","credit <- read.csv(""credit_record.csv"")"

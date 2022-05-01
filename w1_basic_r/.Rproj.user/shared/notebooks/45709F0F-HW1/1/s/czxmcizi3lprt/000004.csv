@@ -1,0 +1,7 @@
+"0",""
+"0","number_of_airlines <- nlevels(nyc$carrier) # nlevels: The Number of Levels of a Factor"
+"0","number_of_airlines"
+"1","[1]"
+"1"," 16"
+"1","
+"

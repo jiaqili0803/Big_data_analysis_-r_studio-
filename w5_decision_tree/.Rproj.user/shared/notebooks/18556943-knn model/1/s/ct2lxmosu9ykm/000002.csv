@@ -1,0 +1,5 @@
+"0","library(do)"
+"0","STATUS1 <- Replace(data=credit$STATUS,from = c(""0"", ""1"", ""2"", ""3"", ""4"", ""5""),to = 0)"
+"0","STATUS2 <- Replace(data=STATUS1,from = c(""X"", ""C""),to = 1)"
+"0","credit$STATUS_NEW <- STATUS2"
+"0","credit$STATUS_NEW <- as.numeric(credit$STATUS_NEW)"

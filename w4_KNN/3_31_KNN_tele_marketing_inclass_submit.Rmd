@@ -1,0 +1,155 @@
+---
+title: "3/31_KNN_tele_marketing_inclass_submit"
+author: "Ella.Li"
+date: "3/31/2022"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+#Downloading and Prepping the Data
+
+```{r}
+tele <- read.csv("tele.csv", stringsAsFactors = TRUE)
+summary(tele)
+
+#We are deleting the "duration" variable because it is an after the fact measurement. We only should be using variables that we know before the call
+tele$duration <- NULL
+
+# Deleting the columns X
+tele$X <- NULL
+
+# only for class exercise!
+tele$day_of_week <- NULL
+tele$month <- NULL
+tele$job <- NULL
+tele$education <- NULL
+tele$default <- NULL
+
+# Changing pdays to a dummy and deleting pdays
+tele$pdaysdummy <- ifelse(tele$pdays == 999, 0, 1)
+tele$pdays <- NULL
+
+set.seed(12345)
+kill_rows <- sample(1:nrow(tele), 0.05*nrow(tele))
+tele_small <- tele[kill_rows, ]
+
+
+
+
+str(tele_small)
+```
+
+## Getting Data Ready for Analysis
+
+```{r}
+# Using model.matrix to convert all the factors to dummy variables
+# We are converting all of the factors into dummy variables as the input into ANN has to be numeric
+
+telemm <- as.data.frame(model.matrix(~.-1,tele_small))
+# str(telemm)
+
+# Randomize the rows in the data (shuffling the rows)
+# set.seed(12345)
+# tele_random <- telemm[sample(nrow(telemm)),]
+
+#Normalize the data
+normalize <- function(x) {
+  return ((x - min(x)) / (max(x) - min(x)))
+}
+
+# we are going to normalize everything 
+# we use telemm here because  we did not randomize
+tele_norm <- as.data.frame(lapply(telemm, normalize))
+
+str(tele_norm)
+```
+
+## Getting Train and Test Samples
+
+```{r}
+# Selects 10000 random rows for test data
+set.seed(12345)
+# choose 2000 only for class exercise, or 10000
+test_set <- sample(1:nrow(tele_norm), 400) 
+# Depending on R-version and computer, different rows may be selected. 
+# If that happens, results are different. 
+
+# Create a train set and test set
+#First the predictors - all columns except the yyes column
+tele_train <- tele_norm[-test_set, -20]
+tele_test <- tele_norm[test_set, -20]
+
+# y label column
+# Label for test, essentially just the Y value
+test_label <- tele_norm[test_set, 20]
+#Label for train
+train_label <- tele_norm[-test_set, 20]
+
+str(tele_train)
+summary(tele_train)
+str(tele_test)
+summary(tele_test)
+
+
+```
+# KNN model
+
+```{r}
+library(class)
+
+#KNN command, outputs prediction for the test data
+# usually choose odd number, k is usually the square root of number of rows
+test_pred <- knn(train = tele_train, test = tele_test, cl = train_label, k = 40)
+summary(test_pred)
+
+library(caret)
+#Confusion Matrix
+confusionMatrix(as.factor(test_label), as.factor(test_pred), positive = "1")
+
+```
+# recall ANN model confusionmatrix
+
+```{r}
+# Selects 10000 random rows for test data
+set.seed(12345)
+# choose 2000 only for class exercise, or 10000
+test_set <- sample(1:nrow(tele_norm), 400) 
+# Depending on R-version and computer, different rows may be selected. 
+# If that happens, results are different. 
+
+# Create a train set and test set
+#First the predictors - all columns except the yyes column
+tele_train <- tele_norm[-test_set, ]
+tele_test <- tele_norm[test_set, ]
+
+str(tele_train)
+summary(tele_train)
+str(tele_test)
+summary(tele_test)
+
+library(neuralnet)
+
+model_1 <- neuralnet(yyes ~., data=tele_train, stepmax = 1e5) 
+
+plot(model_1)
+
+p1 <- predict(model_1, tele_test) # predict only use the x data from test set, to predict y
+summary(p1)
+
+p1_binary <- ifelse(p1 >= 0.5, 1, 0)
+
+library(gmodels)
+
+CrossTable(p1_binary, tele_test$yyes, prop.chisq = F,prop.r = F, prop.c = F, prop.t = F)
+
+#Confusion Matrix
+confusionMatrix(as.factor(p1_binary), as.factor(tele_test$yyes), positive = "1")
+
+
+```
+## Comparasion results CONCLUSION
+
+KNN's confusionmatrix and Accuracy are better than ANN'S. 

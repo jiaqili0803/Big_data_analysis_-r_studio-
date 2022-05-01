@@ -1,0 +1,8 @@
+"0",""
+"0","nyc_UA_JAN_12 <- nyc[(nyc$carrier == ""UA"") & (nyc$month == 1) & (nyc$day == 12) , ] # here no column just means every column"
+"0","# here, int should == int type, but  == str will also work because R will auto transfer to same type;"
+"0","nrow(nyc_UA_JAN_12)"
+"1","[1]"
+"1"," 112"
+"1","
+"

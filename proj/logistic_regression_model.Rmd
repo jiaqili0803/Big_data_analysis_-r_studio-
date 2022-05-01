@@ -1,0 +1,123 @@
+---
+title: "628 project"
+author: "Ella Li"
+date: "4/12/2022"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+#read data
+```{r}
+application <- read.csv("application_record.csv")
+credit <- read.csv("credit_record.csv")
+```
+
+# reclassifying
+```{r}
+library(do)
+STATUS1 <- Replace(data=credit$STATUS,from = c("0", "1", "2", "3", "4", "5"),to = 0)
+STATUS2 <- Replace(data=STATUS1,from = c("X", "C"),to = 1)
+credit$STATUS_NEW <- STATUS2
+credit$STATUS_NEW <- as.numeric(credit$STATUS_NEW)
+```
+
+# calculate the overall performance of each client
+```{r}
+performance <- tapply(credit$STATUS_NEW, credit$ID, mean, na.rm = TRUE)
+all <- as.data.frame(performance, row.names = NULL)
+all$ID <- rownames(all)
+```
+
+# match the performance to credit dataset
+```{r}
+credit$STATUE_FINAL <- all$performance[match(credit$ID, all$ID)]
+credit$STATUEDUMMY <- ifelse(credit$STATUE_FINAL <=0.5, 0, 1)
+```
+
+# match two datasets
+```{r}
+application$STATUS <- credit$STATUEDUMMY[match(application$ID, credit$ID)]
+new <- na.omit(application)
+```
+
+# data cleaning
+```{r}
+new$CODE_GENDER <- as.factor(new$CODE_GENDER)
+new$FLAG_OWN_CAR <- as.factor(new$FLAG_OWN_CAR)
+new$FLAG_OWN_REALTY <- as.factor(new$FLAG_OWN_REALTY)
+new$CNT_CHILDREN <- NULL
+new$NAME_INCOME_TYPE <- as.factor(new$NAME_INCOME_TYPE)
+new$NAME_EDUCATION_TYPE <- as.factor(new$NAME_EDUCATION_TYPE)
+new$FLAG_MOBIL <- NULL
+new$FLAG_WORK_PHONE <- NULL
+NEW_HOUSING_TYPE <- Replace(data = new$NAME_HOUSING_TYPE,from = c("Co-op apartment", "Municipal apartment", "Rented apartment"),to = "Rented apartment")
+new$NEW_HOUSING_TYPE <- NEW_HOUSING_TYPE
+new$NAME_HOUSING_TYPE <- NULL
+new$NEW_HOUSING_TYPE <- as.factor(new$NEW_HOUSING_TYPE)
+occupation1 <- Replace(data = new$OCCUPATION_TYPE, from = c("Accountants", "Core staff", "High skill tech staff", "HR staff", "IT staff", "Managers", "Medicine staff", "Realty agents", "Sales staff"), to = "White collar")
+occupation2 <- Replace(data = occupation1, from = c("Cleaning staff", "Cooking staff", "Drivers", "Laborers", "Low-skill Laborers", "Security staff"), to = "Blue collar")
+occupation3 <- Replace(data = occupation2, from = c("Private service staff", "Secretaries", "Waiters/barmen staff"), to = "Pink collar")
+new$OCCUPATION_TYPE_NEW <- occupation3
+new$OCCUPATION_TYPE_NEW[new$OCCUPATION_TYPE_NEW == '']<- NA
+new$OCCUPATION_TYPE <- NULL
+AGE <- round(new$DAYS_BIRTH*(-1)/365, digits = 0)
+new$AGE <- AGE
+new$DAYS_BIRTH <- NULL
+YEARS_EMPLOYED1 <- round(new$DAYS_EMPLOYED*(-1)/365, digits = 0) 
+YEARS_EMPLOYED2 <- replace(YEARS_EMPLOYED1, YEARS_EMPLOYED1 < 0, 0)
+new$YEARS_EMPLOYED <- YEARS_EMPLOYED2
+
+new$DAYS_EMPLOYED <- NULL
+NEW_FAMILY_STATUS <- Replace(data=new$NAME_FAMILY_STATUS,from = c("Civil marriage", "Married"),to = "Married")
+new$NEW_FAMILY_STATUS <- NEW_FAMILY_STATUS
+NEW_FAMILY_STATUS <- as.factor(NEW_FAMILY_STATUS)
+new$NAME_FAMILY_STATUS <- NULL
+new <- na.omit(new)
+```
+
+# Logistic Model
+
+## Getting data ready
+```{r}
+perfmm <- as.data.frame(model.matrix(~.-1,new))
+str(perfmm)
+set.seed(12345)
+perf_random <- perfmm[sample(nrow(perfmm)),]
+normalize <- function(x) {
+  return ((x - min(x)) / (max(x) - min(x)))
+}
+perf_norm <- as.data.frame(lapply(perf_random, normalize))
+perf_norm$STATUS <- as.factor(perf_norm$STATUS)
+str(perf_norm)
+summary(perf_norm)
+```
+
+## Test and Train
+```{r}
+set.seed(12345)
+test_set <- sample(1:nrow(perf_norm), 0.2*nrow(perf_norm)) 
+perf_train <- perf_norm[-test_set, ]
+perf_test <- perf_norm[test_set, ]
+
+str(perf_train)
+```
+
+## build model
+
+```{r}
+log_model_1 <- glm(STATUS ~ ., data=perf_train, family = "binomial") # train model only use train data
+summary(log_model_1)
+predicted_model <- predict(log_model_1, perf_test, type="response") # use test data
+binary_predicted_model <- ifelse(predicted_model >= 0.5, 1, 0)
+
+
+library(gmodels)
+CrossTable(binary_predicted_model, perf_test$STATUS) 
+
+
+# confusionMatrix(as.factor(knn_pred), as.factor(test_label), positive = "1")
+```
+

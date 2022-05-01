@@ -1,0 +1,3 @@
+"0","model_1 <- neuralnet(left ~., data=hr_train)  #we need to predict Y(left)"
+"0",""
+"0",""

@@ -1,0 +1,6 @@
+"0","# Computing algorithm performance "
+"0","if(!""caret"" %in% installed.packages()){install.packages(""caret"")}"
+"0","library(caret)"
+"2","Error: package or namespace load failed for ‘caret’ in loadNamespace(j <- i[[1L]], c(lib.loc, .libPaths()), versionCheck = vI[[j]]):
+ namespace ‘generics’ 0.1.0 is already loaded, but >= 0.1.0.9000 is required
+"

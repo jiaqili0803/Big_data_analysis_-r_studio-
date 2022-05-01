@@ -1,0 +1,8 @@
+"0","set.seed(12345)"
+"0",""
+"0","test_set <- sample(1:nrow(hr_normal), 0.2*nrow(hr_normal)) #random sample"
+"0",""
+"0","hr_test <- hr_normal[test_set, ]"
+"0","hr_train <- hr_normal[-test_set, ]"
+"0","rm(hr_normal)"
+"0",""

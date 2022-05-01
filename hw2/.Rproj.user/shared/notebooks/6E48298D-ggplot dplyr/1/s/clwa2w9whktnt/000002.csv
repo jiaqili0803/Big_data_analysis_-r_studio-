@@ -1,0 +1,5 @@
+"0","library(""maps"") #Assuming this is installed, otherwise install first"
+"2","Warning:"
+"2"," package ‘maps’ was built under R version 4.1.3
+"
+"0","USStates <- map_data(""state"")"

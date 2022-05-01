@@ -1,0 +1,134 @@
+"0","summary(mail_model)"
+"1","
+Call:
+"
+"1",""
+"1","C5.0.formula(formula = Spam ~ ., data = mail_train)"
+"1",""
+"1","
+
+"
+"1","
+C5.0 [Release 2.07 GPL Edition]  	Thu Apr 07 11:03:49 2022
+-------------------------------
+
+Class specified by attribute `outcome'
+
+Read 3681 cases (10 attributes) from undefined.data
+
+Decision tree:
+
+Percent_..4 > 0.044:
+:...Percent_..3 > 0.077: 1 (705/36)
+:   Percent_..3 <= 0.077:
+:   :...LongestAllCaps <= 5: 0 (14/1)
+:       LongestAllCaps > 5:
+:       :...Percent_..4 > 0.147:
+:           :...LongestAllCaps > 140: 0 (8/2)
+:           :   LongestAllCaps <= 140:
+:           :   :...Percent_..1 <= 0.297: 1 (99/4)
+:           :       Percent_..1 > 0.297:
+:           :       :...Percent_..4 <= 0.674: 0 (9/1)
+:           :           Percent_..4 > 0.674: 1 (2)
+:           Percent_..4 <= 0.147:
+:           :...AvgLengthAllCaps > 4.11: 1 (18/1)
+:               AvgLengthAllCaps <= 4.11:
+:               :...Percent_..2 > 0.01: 0 (12)
+:                   Percent_..2 <= 0.01:
+:                   :...Percent_..3 <= 0.049: 0 (60/15)
+:                       Percent_..3 > 0.049:
+:                       :...Percent_..5 <= 0.012: 1 (17/1)
+:                           Percent_..5 > 0.012: 0 (4/1)
+Percent_..4 <= 0.044:
+:...Percent_..3 <= 0.087:
+    :...AvgLengthAllCaps > 7.092:
+    :   :...Percent_..2 > 0.039: 0 (10)
+    :   :   Percent_..2 <= 0.039:
+    :   :   :...Percent_. <= 1.353: 1 (35/11)
+    :   :       Percent_. > 1.353: 0 (4)
+    :   AvgLengthAllCaps <= 7.092:
+    :   :...Percent_..4 <= 0.018: 0 (1777/150)
+    :       Percent_..4 > 0.018:
+    :       :...Percent_..5 > 0.031: 1 (4)
+    :           Percent_..5 <= 0.031:
+    :           :...Percent_..1 > 0.085: 0 (47)
+    :               Percent_..1 <= 0.085:
+    :               :...Percent_..2 > 0.008: 0 (2)
+    :                   Percent_..2 <= 0.008:
+    :                   :...TotalAllCaps <= 294: 1 (10/2)
+    :                       TotalAllCaps > 294:
+    :                       :...TotalAllCaps <= 791: 0 (10)
+    :                           TotalAllCaps > 791: 1 (3)
+    Percent_..3 > 0.087:
+    :...AvgLengthAllCaps > 2.754:
+        :...Percent_..4 > 0.006: 1 (36)
+        :   Percent_..4 <= 0.006:
+        :   :...Percent_..3 > 0.486: 1 (142/10)
+        :       Percent_..3 <= 0.486:
+        :       :...AvgLengthAllCaps > 5.525: 1 (51/4)
+        :           AvgLengthAllCaps <= 5.525:
+        :           :...TotalAllCaps <= 539: 1 (93/39)
+        :               TotalAllCaps > 539: 0 (6)
+        AvgLengthAllCaps <= 2.754:
+        :...Percent_. > 0.075: 0 (28/1)
+            Percent_. <= 0.075:
+            :...TotalAllCaps > 69:
+                :...Percent_..3 > 0.414: 1 (51/7)
+                :   Percent_..3 <= 0.414:
+                :   :...Percent_..1 > 0.096: 0 (55/9)
+                :       Percent_..1 <= 0.096:
+                :       :...AvgLengthAllCaps <= 1.342: 0 (4)
+                :           AvgLengthAllCaps > 1.342: 1 (50/18)
+                TotalAllCaps <= 69:
+                :...Percent_..3 > 1.282:
+                    :...TotalAllCaps > 14: 1 (21/4)
+                    :   TotalAllCaps <= 14:
+                    :   :...TotalAllCaps <= 3: 1 (2)
+                    :       TotalAllCaps > 3: 0 (14/2)
+                    Percent_..3 <= 1.282:
+                    :...Percent_..1 > 0.292: 0 (30)
+                        Percent_..1 <= 0.292:
+                        :...TotalAllCaps <= 51: 0 (195/34)
+                            TotalAllCaps > 51:
+                            :...Percent_..3 > 0.462: 1 (10/2)
+                                Percent_..3 <= 0.462:
+                                :...AvgLengthAllCaps > 1.529: 0 (30/5)
+                                    AvgLengthAllCaps <= 1.529:
+                                    :...Percent_..1 <= 0.061: 1 (6)
+                                        Percent_..1 > 0.061:
+                                        :...TotalAllCaps <= 57: 0 (4)
+                                            TotalAllCaps > 57: 1 (3)
+
+
+Evaluation on training data (3681 cases):
+
+	    Decision Tree   
+	  ----------------  
+	  Size      Errors  
+
+	    41  360( 9.8%)   <<
+
+
+	   (a)   (b)    <-classified as
+	  ----  ----
+	  2102   139    (a): class 0
+	   221  1219    (b): class 1
+
+
+	Attribute usage:
+
+	100.00%	Percent_..3
+	100.00%	Percent_..4
+	 77.26%	AvgLengthAllCaps
+	 16.22%	TotalAllCaps
+	 15.46%	Percent_..1
+	 14.72%	Percent_.
+	  6.60%	LongestAllCaps
+	  4.54%	Percent_..2
+	  2.64%	Percent_..5
+
+
+Time: 0.0 secs
+"
+"1","
+"

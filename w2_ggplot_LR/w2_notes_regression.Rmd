@@ -1,0 +1,69 @@
+---
+title: "w2_notes_regression"
+author: "Ella.Li"
+date: "3/15/2022"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Linear Regression
+
+## read, calean data
+```{r}
+adv <- read.csv("Advertising2.csv")
+
+adv$Instagram <- as.factor(adv$Instagram)
+str(adv)
+summary(adv)
+```
+## split into test and train data
+```{r}
+
+set.seed(12345)
+test_set <- sample(1:nrow(adv), 0.4*nrow(adv)) # take random sample, choose 40% data from all 1:200 rows
+adv_test <- adv[test_set, ]
+adv_train <- adv[-test_set, ] # data not in the test set
+
+```
+
+## build model
+
+### simple model
+```{r}
+
+# response/y = sales, predictor/x = TV + Radio + Newspaper
+m_1 <- lm(Sales ~ TV + Radio + Newspaper, data = adv_train)  # only use train data
+summary(m_1)
+
+
+
+```
+(predicted) Sales = 2.988 + 0.0448*TV + 0.1967*Radio (no Newspaper, not significant)
+
+### HOW TO HANDLE CATEGORICAL VARIABLES? -- Dummy variable model
+
+```{r}
+
+m2 <- lm(Sales ~ ., data= adv_train)
+summary(m2)
+```
+### interaction variable model
+
+```{r}
+
+m3 <- lm(Sales ~ . + TV*Instagram, data = adv_train)
+summary(m3)
+```
+WE can find that tv*ins campaign will decrease the slope of relationship of adv and sales.
+
+### Step model (find best model)
+```{r}
+# starting from a big model: m3
+mstep <- step(m3, direction = "backward")
+summary(mstep)
+
+```
+the last result will give back only the significant predictors needed for prediction model.(here is TV and Radio)

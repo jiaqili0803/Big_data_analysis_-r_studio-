@@ -1,0 +1,17 @@
+"0","by_tailnum <- group_by(flights, tailnum)"
+"0","delaydata <- summarise(by_tailnum,"
+"0","  count = n(),"
+"0","  dist = mean(distance, na.rm = TRUE),"
+"0","  delay = mean(arr_delay, na.rm = TRUE))"
+"0","filtereddelay <- filter(delaydata, count > 20, dist < 2000)"
+"0",""
+"0","ggplot(filtereddelay, aes(dist, delay)) +"
+"0","  geom_point(aes(size = count), alpha = 1/2) + geom_smooth()"
+"2","`geom_smooth()` using method = 'gam' and formula 'y ~ s(x, bs = ""cs"")'
+"
+"2","Warning:"
+"2"," Removed 1 rows containing non-finite values (stat_smooth).
+"
+"2","Warning:"
+"2"," Removed 1 rows containing missing values (geom_point).
+"

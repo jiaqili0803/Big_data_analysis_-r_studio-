@@ -1,0 +1,120 @@
+---
+title: "w5_notes"
+author: "Ella.Li"
+date: "4/5/2022"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(C50)
+str(iris)
+
+iris_model <- C5.0(Species ~., data = iris)
+plot(iris_model)
+summary(iris)
+
+iris_pred <- predict(iris_model, iris)
+table(iris_pred, iris$Species)
+```
+
+# class exercise
+
+## load and clean data
+```{r}
+mail_data <- read.csv("MailData.csv")
+mail_data$Spam <- as.factor(mail_data$Spam) # to factor 
+
+str(mail_data)
+summary(mail_data)
+summary(is.na(mail_data))
+
+# do not need randomize cause the decision tree do not "scale dependent"
+
+```
+
+## test and train split
+```{r}
+set.seed(12345)
+
+test_set <- sample(1:nrow(mail_data), 0.2*nrow(mail_data)) #random sample
+
+mail_test <- mail_data[test_set, ]
+mail_train <- mail_data[-test_set, ]
+
+
+```
+
+## biuld desision tree on train
+```{r}
+mail_model <- C5.0(Spam ~., data = mail_train)
+
+```
+
+## plot and summary of model to understand
+```{r}
+plot(mail_model)
+summary(mail_model)
+```
+
+## predict test
+```{r}
+mail_pred <- predict(mail_model, mail_test) # predict only use the x data from test set, to predict y
+summary(mail_pred)
+
+
+```
+
+## build confusion matrix
+
+```{r}
+library(gmodels)
+library(caret)
+# table(mail_pred, mail_test$Spam)
+CrossTable(mail_pred, mail_test$Spam, prop.chisq = F,prop.r = F, prop.c = F, prop.t = F)
+confusionMatrix(mail_pred, mail_test$Spam)
+```
+```{r}
+
+```
+
+
+# AGAIN DESICION TREE
+
+```{r}
+
+credit <- read.csv("credit.csv", stringsAsFactors = TRUE)
+str(credit)
+summary(credit)
+
+set.seed(12345)
+test_set <- sample(1:nrow(credit), 0.2*nrow(credit)) #random sample
+credit_test <- credit[test_set, ]
+credit_train <- credit[-test_set, ]
+
+dt_model <- C5.0(default ~., data = credit_train)
+dt_predict  <- predict(dt_model, credit_test) # predict only use the x data from test set, to predict y
+
+
+confusionMatrix(dt_predict, credit_test$default, positive = 'yes') # LOOKING AT THE POSITIVE VALUES WE WANT
+```
+
+
+
+# random forest
+```{r}
+library(randomForest)
+
+rf_model <- randomForest(default ~., data = credit_train)
+
+rf_predict <- predict(rf_model, credit_test)
+
+confusionMatrix(rf_predict, credit_test$default, positive = 'yes')
+
+randomForest::importance(rf_model)
+randomForest::varImpPlot(rf_model)
+```
+

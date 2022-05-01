@@ -1,0 +1,2 @@
+"0","credit$STATUE_FINAL <- all$performance[match(credit$ID, all$ID)]"
+"0","credit$STATUEDUMMY <- ifelse(credit$STATUE_FINAL <=0.5, 0, 1)"

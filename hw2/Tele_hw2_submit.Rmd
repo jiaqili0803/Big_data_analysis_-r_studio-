@@ -1,0 +1,219 @@
+---
+title: "HW2 Telemarketing final"
+author: "Ella Li (jiaqi li)"
+date: "3/24/2022"
+output:
+  html_document:
+    toc: true
+    theme: readable
+    highlight: tango
+    code_folding: show
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Downloading and Prepping the Data
+
+```{r}
+#Downloading and Prepping the Data
+tele <- read.csv("tele.csv", stringsAsFactors = TRUE)
+summary(tele)
+
+#We are deleting the "duration" variable because it is an after the fact measurement. We only should be using variables that we know before the call
+tele$duration <- NULL
+
+# Deleting the columns X
+tele$X <- NULL
+
+# only for class exercise!
+# tele$day_of_week <- NULL
+# tele$month <- NULL
+# tele$job <- NULL
+# tele$education <- NULL
+tele$default <- NULL
+
+
+# Changing pdays to a dummy and deleting pdays
+tele$pdaysdummy <- ifelse(tele$pdays == 999, 0, 1)
+tele$pdays <- NULL
+
+
+
+
+set.seed(12345)
+
+
+
+
+```
+# kill rows for time
+```{r}
+kill_rows <- sample(1:nrow(tele), 0.05*nrow(tele))
+tele <- tele[kill_rows, ]
+
+
+
+
+str(tele)
+```
+
+
+
+# Getting Data Ready for Analysis
+
+```{r}
+# Using model.matrix to convert all the factors to dummy variables
+# We are converting all of the factors into dummy variables as the input into ANN has to be numeric
+
+telemm <- as.data.frame(model.matrix(~.-1,tele))
+table(telemm$yyes)
+
+# Randomize the rows in the data (shuffling the rows)
+set.seed(12345)
+# tele_random <- telemm[sample(nrow(telemm)),]
+
+# do upsample to balance the sample size for 0 and 1 values for yyes
+library(groupdata2)
+tele_random <- upsample(telemm, cat_col = "yyes")
+table(tele_random$yyes)
+
+tele_random <- na.omit(tele_random) 
+table(tele_random$yyes)
+
+#Normalize the data
+normalize <- function(x) {
+  return ((x - min(x)) / (max(x) - min(x)))
+}
+
+# we are going to normalize everything 
+# we use telemm here because  we did not randomize
+tele_norm <- as.data.frame(lapply(tele_random, normalize))
+str(tele_norm)
+```
+
+
+
+# Getting Train and Test Samples
+
+```{r}
+# Selects 10000 random rows for test data
+set.seed(12345)
+# dropeducationilliterate because of NA after norm
+tele_norm$educationilliterate <- NULL
+# choose 2000 only for class exercise, or 10000
+test_set <- sample(1:nrow(tele_norm), 400) 
+
+# Depending on R-version and computer, different rows may be selected. 
+# If that happens, results are different. 
+
+# Create a train set and test set
+#First the predictors - all columns except the yyes column
+tele_train <- tele_norm[-test_set, ]
+tele_test <- tele_norm[test_set, ]
+
+str(tele_train)
+summary(tele_train)
+# str(tele_test)
+# summary(tele_test)
+
+```
+# check na
+```{r}
+table(is.na(tele_train)) 
+```
+
+
+
+# ANN MODEL
+
+## ANN train MODEL 1
+
+```{r}
+library(neuralnet)
+
+model_1 <- neuralnet(yyes ~., data=tele_train, stepmax = 1e8) 
+
+plot(model_1)
+
+```
+
+## ANN train MODEL 2
+
+```{r}
+
+model_2 <- neuralnet(yyes ~., data=tele_train, hidden=5, stepmax = 1e8) 
+
+plot(model_2)
+
+```
+
+## ANN train MODEL 3 (commented because of computing power)
+
+```{r}
+# model_3 <- neuralnet(yyes ~., data=tele_train, hidden = c(4,3,2), stepmax = 1e8) 
+# 
+# plot(model_3)
+```
+# Prediction
+
+## Prediction model_1
+```{r}
+p1 <- predict(model_1, tele_test) # predict only use the x data from test set, to predict y
+summary(p1)
+
+p1_binary <- ifelse(p1 >= 0.5, 1, 0)
+
+```
+## Prediction model_2
+```{r}
+p2 <- predict(model_2, tele_test) # predict only use the x data from test set, to predict y
+summary(p2)
+
+p2_binary <- ifelse(p2 >= 0.5, 1, 0)
+```
+
+## Prediction model_3
+```{r}
+# p3 <- predict(model_3, tele_test) # predict only use the x data from test set, to predict y
+# summary(p3)
+# 
+# p3_binary <- ifelse(p3 >= 0.5, 1, 0)
+```
+
+
+# Evaluate 
+
+## Evaluate the confusion matirx for mode_1
+```{r}
+library(gmodels)
+
+CrossTable(p1_binary, tele_test$yyes, prop.chisq = F,prop.r = F, prop.c = F, prop.t = F)
+# compare y and true y
+
+library(caret)
+#Confusion Matrix
+confusionMatrix(as.factor(tele_test$yyes), as.factor(p1_binary), positive = "1")
+```
+
+## Evaluate the confusion matirx for mode_2
+```{r}
+CrossTable(p2_binary, tele_test$yyes, prop.chisq = F,prop.r = F, prop.c = F, prop.t = F)
+confusionMatrix(as.factor(tele_test$yyes), as.factor(p2_binary), positive = "1")
+```
+
+## Evaluate the confusion matirx for mode_3
+```{r}
+# CrossTable(p3_binary, tele_test$yyes, prop.chisq = F,prop.r = F, prop.c = F, prop.t = F)
+# confusionMatrix(as.factor(tele_test$yyes), as.factor(p3_binary), positive = "1")
+```
+
+# Conclusion
+Because my computer's computing power is not enough, I ran for days without results, so I still used killrows to select a small part of the original data and adjusted 400 rows according to the amount of data as test data, so as to get the results of model1, 2, 3.
+
+Among them, I used upsample to balance yes or no.
+
+From the final results obtained , model1 has an accuracy of 0.7975, model2 has 0.89, and model3 should have better result (but due to the computing power, I commented model3 for submission).
+
+So I would like to choose to use ANN model to improve the success rate of telemarketing efforts, I will apply the model to new customers, I will make phone contact for customers that the model predicts will buy the service, while customers that the model predicts will not buy the service will not make phone contact, this will save a lot of cost. This will save a lot of money. This will facilitate the major decisions of the company in terms of human and material resources.

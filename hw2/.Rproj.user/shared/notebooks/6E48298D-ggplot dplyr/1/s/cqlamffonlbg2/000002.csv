@@ -1,0 +1,12 @@
+"0","flights %>%"
+"0","  group_by(year, month, day) %>%"
+"0","  select(arr_delay, dep_delay) %>%"
+"0","  summarise("
+"0","    arr = mean(arr_delay, na.rm = TRUE),"
+"0","    dep = mean(dep_delay, na.rm = TRUE)"
+"0","  ) %>%"
+"0","  filter(arr > 30 | dep > 30)"
+"1","Adding missing grouping variables: `year`, `month`, `day`
+"
+"1","`summarise()` has grouped output by 'year', 'month'. You can override using the `.groups` argument.
+"

@@ -1,0 +1,80 @@
+---
+title: "logistic_regresssion class notes"
+author: "Ella.Li jiaqi li"
+date: "3/17/2022"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Logistic regression
+
+## logistic curve
+
+```{r}
+
+# log_odds_ratio 
+p <- seq(0, 1, 0.001)
+log_odds_ratio <- log(p/(1-p))
+
+plot(p, log_odds_ratio) # now the log_odds_ratio is from (-inf, inf), can apply regression
+```
+
+## import and clean data
+
+```{r}
+
+grad <- read.csv("binary.csv")
+
+grad$rank <- as.factor(grad$rank)
+
+
+str(grad)
+summary(grad)
+```
+
+## test and train data
+
+```{r}
+set.seed(12345)
+test_set <- sample(1:nrow(grad), 0.25*nrow(grad))
+
+grad_test <- grad[test_set, ]
+grad_train <- grad[-test_set, ]
+```
+
+
+
+## build a model
+
+```{r}
+
+log_model_1 <- glm(admit ~ ., data=grad_train, family = "binomial") # train model only use train data
+summary(log_model_1)
+
+# gre increase 1, the y estimate will increase 0.002264;
+```
+## make prediction
+
+```{r}
+### 1. get predict value (probability) for specific data point
+new_data <- data.frame(gre=700, gpa=3.8, rank=2)
+new_data$rank <- as.factor(new_data$rank)
+
+predict(log_model_1, newdata = new_data)  # without type="response" will get predicted log odds ration
+
+predict(log_model_1, newdata = new_data, type="response")
+# we get predict value (probability) for specific data point
+
+
+### 2. predict on test 
+pred <- predict(log_model_1, grad_test, type="response") # use test data
+binary_pred <- ifelse(pred >= 0.5, 1, 0)
+
+library(gmodels)
+CrossTable(binary_pred, grad_test$admit) # compare
+```
+
+

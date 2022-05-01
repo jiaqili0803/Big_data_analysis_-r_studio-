@@ -1,0 +1,6 @@
+"0","average_arrival_delay <- mean(nyc$arr_delay, na.rm = TRUE)"
+"0","average_arrival_delay"
+"1","[1]"
+"1"," 6.895377"
+"1","
+"

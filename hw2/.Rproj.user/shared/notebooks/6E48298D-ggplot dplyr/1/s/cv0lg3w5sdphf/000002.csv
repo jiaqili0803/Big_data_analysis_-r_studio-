@@ -1,0 +1,1 @@
+"0","ggplot(data=diamonds, aes(x=color)) + geom_bar()"

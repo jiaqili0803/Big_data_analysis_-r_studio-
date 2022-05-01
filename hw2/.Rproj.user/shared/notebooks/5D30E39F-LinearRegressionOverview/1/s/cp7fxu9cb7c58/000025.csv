@@ -1,0 +1,3 @@
+"0",""
+"0","# Four plots in one single page "
+"0","par(mfrow=c(2,2))"

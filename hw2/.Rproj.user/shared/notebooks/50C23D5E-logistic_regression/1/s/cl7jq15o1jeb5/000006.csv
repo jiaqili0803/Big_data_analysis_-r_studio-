@@ -1,0 +1,6 @@
+"0",""
+"0","# log_odds_ratio "
+"0","p <- seq(0, 1, 0.001)"
+"0","log_odds_ratio <- log(p/(1-p))"
+"0",""
+"0","plot(p, log_odds_ratio) # now the log_odds_ratio is from (-inf, inf), can apply regression"

@@ -1,0 +1,2 @@
+"0","test_label <- perf_norm[test_set, 18]"
+"0","train_label <- perf_norm[-test_set, 18]"

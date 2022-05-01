@@ -1,0 +1,2 @@
+"0","baseplotcolor <- ggplot(data=diamonds, aes(x=carat, y=price, colour=color))"
+"0","baseplotcolor + geom_point(size=3, alpha=1)"

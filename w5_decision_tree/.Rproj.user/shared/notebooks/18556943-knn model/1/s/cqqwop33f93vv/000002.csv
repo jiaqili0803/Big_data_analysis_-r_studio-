@@ -1,0 +1,2 @@
+"0","application$STATUS <- credit$STATUEDUMMY[match(application$ID, credit$ID)]"
+"0","new <- na.omit(application)"
